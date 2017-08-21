@@ -35,7 +35,7 @@ def save_bottleneck_features():
     generator = datagen.flow_from_directory(
         train_data_dir,
         target_size=(img_width, img_height),
-        batch_size=32,
+        batch_size=1,
         class_mode=None,
         shuffle=False)
 
@@ -43,12 +43,13 @@ def save_bottleneck_features():
     bottleneck_features_train = model.predict_generator(generator, nb_train_samples)
     np.save(os.path.join(result_dir, 'bottleneck_features_train.npy'),
             bottleneck_features_train)
+    print(bottleneck_features_train.shape)
 
     # Dog vs Catのバリデーションセットを生成するジェネレータを作成
     generator = datagen.flow_from_directory(
         validation_data_dir,
         target_size=(img_width, img_height),
-        batch_size=32,
+        batch_size=1,
         class_mode=None,
         shuffle=False)
 
@@ -56,6 +57,7 @@ def save_bottleneck_features():
     bottleneck_features_validation = model.predict_generator(generator, nb_validation_samples)
     np.save(os.path.join(result_dir, 'bottleneck_features_validation.npy'),
             bottleneck_features_validation)
+    print(bottleneck_features_validation.shape)
 
 
 def train_top_model():
