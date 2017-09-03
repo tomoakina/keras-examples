@@ -15,7 +15,6 @@ classes = ['Tulip', 'Snowdrop', 'LilyValley', 'Bluebell', 'Crocus',
            'Windflower', 'Pansy']
 
 batch_size = 32
-nb_classes = len(classes)
 
 img_rows, img_cols = 150, 150
 channels = 3
@@ -23,9 +22,9 @@ channels = 3
 train_data_dir = 'train_images'
 validation_data_dir = 'test_images'
 
-nb_train_samples = 1190
-nb_val_samples = 170
-nb_epoch = 50
+train_samples = 1190
+val_samples = 170
+epochs = 5
 
 result_dir = 'results'
 if not os.path.exists(result_dir):
@@ -45,13 +44,13 @@ if __name__ == '__main__':
     top_model.add(Flatten(input_shape=vgg16.output_shape[1:]))
     top_model.add(Dense(256, activation='relu'))
     top_model.add(Dropout(0.5))
-    top_model.add(Dense(nb_classes, activation='softmax'))
+    top_model.add(Dense(len(classes), activation='softmax'))
 
     # 学習済みのFC層の重みをロード
     # top_model.load_weights(os.path.join(result_dir, 'bottleneck_fc_model.h5'))
 
     # VGG16とFCを接続
-    model = Model(input=vgg16.input, output=top_model(vgg16.output))
+    model = Model(inputs=vgg16.input, outputs=top_model(vgg16.output))
 
     # 最後のconv層の直前までの層をfreeze
     for layer in model.layers[:15]:
@@ -91,10 +90,11 @@ if __name__ == '__main__':
     # Fine-tuning
     history = model.fit_generator(
         train_generator,
-        samples_per_epoch=nb_train_samples,
-        nb_epoch=nb_epoch,
+        steps_per_epoch=train_samples//batch_size,
+        epochs=epochs,
+        verbose=1,
         validation_data=validation_generator,
-        nb_val_samples=nb_val_samples)
+        validation_steps=val_samples//batch_size)
 
     model.save_weights(os.path.join(result_dir, 'finetuning.h5'))
     save_history(history, os.path.join(result_dir, 'history_finetuning.txt'))
